@@ -12,14 +12,19 @@ if (false === strpos($linksList, '/') && false === strpos($linksList, '\\')) {
     $linksList = __DIR__ . '/' . $linksList;
 }
 
-
 if (!file_exists($linksList) || !is_readable($linksList) || '' === $indexNowKey) {
     die('Environment variables are not set');
 }
 
-$content = file_get_contents($linksList);
-$links = explode("\n", $content);
-$links = array_map('trim', $links);
+$links = [];
+$extension = pathinfo($linksList, PATHINFO_EXTENSION);
+$extension = strtolower($extension);
+
+if ('txt' === $extension) {
+    $content = file_get_contents($linksList);
+    $links = explode("\n", $content);
+    $links = array_map('trim', $links);
+}
 
 $client = new GuzzleHttp\Client();
 
@@ -36,6 +41,8 @@ foreach ($links as $link) {
         echo sprintf("%s: %s\n", $link, $code);
     } catch (\GuzzleHttp\Exception\GuzzleException $e) {
     }
+
+    usleep(500);
 }
 
 echo 'Done.' . "\n";
